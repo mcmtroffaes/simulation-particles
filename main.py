@@ -14,13 +14,11 @@ from itertools import combinations
 
 @dataclass
 class Particle:
-    """A class representing a two-dimensional particle."""
-
     r: npt.NDArray[np.single]
     v: npt.NDArray[np.single]
     radius: float
     mass: float
-    style: dict | None  # keyword arguments to the Circle constructor
+    style: dict  # keyword arguments to the Circle constructor
 
 
 def is_overlapping(
@@ -36,7 +34,7 @@ def draw(ax: matplotlib.axes.Axes, p: Particle):
 
 
 def place_particle(
-    particles: Sequence[Particle], radius: float, mass: float, style: dict | None
+    particles: Sequence[Particle], radius: float, mass: float, style: dict
 ) -> Particle:
     """Place single particle."""
     while True:
@@ -49,7 +47,11 @@ def place_particle(
 
 
 def place_particles(
-    particles: MutableSequence[Particle], n: int, radius: float, mass: float, style=None
+    particles: MutableSequence[Particle],
+    n: int,
+    radius: float,
+    mass: float,
+    style: dict,
 ) -> None:
     """Place multiple particles (all with same radius, mass, and style)."""
     for _ in range(n):
