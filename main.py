@@ -36,7 +36,7 @@ def draw(ax: matplotlib.axes.Axes, p: Particle):
 def place_particle(
     particles: Sequence[Particle], radius: float, mass: float, style: dict
 ) -> Particle:
-    """Place single particle."""
+    """Place single particle at random location and random speed."""
     while True:
         r: npt.NDArray[np.single] = radius + (1 - 2 * radius) * np.random.random(2)
         v_r = 0.1 * np.sqrt(np.random.random()) + 1.0
@@ -143,7 +143,7 @@ def main() -> None:
         Particle(np.array([0.5, 0.5]), np.array([0, 0]), 0.1, 2.0, {"color": "red"})
     ]
     place_particles(particles, 200, 0.01, 1.0, {"color": "blue"})
-    animate(particles, 0.005, 600, 8)
+    animate(particles, 0.005, 600, 16)
 
 
 if __name__ == "__main__":
