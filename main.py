@@ -78,8 +78,10 @@ def collide(p1: Particle, p2: Particle) -> None:
 
 def handle_collisions(particles: Sequence[Particle]) -> None:
     """Detect and handle any collisions between the Particles."""
-    pairs = combinations(range(len(particles)), 2)
-    for i, j in pairs:
+    #  pairs = combinations(range(len(particles)), 2)
+    #  for i, j in pairs:
+    i = 0
+    for j in range(1, len(particles)):
         p1, p2 = particles[i], particles[j]
         if is_overlapping(p1.r, p1.radius, p2.r, p2.radius):
             collide(p1, p2)
@@ -105,7 +107,12 @@ def advance_all(particles: Sequence[Particle], dt: float) -> None:
 
 
 def animate(
-    particles: Sequence[Particle], dt: float, frames: int, steps: int = 1
+    particles: Sequence[Particle],
+    dt: float,
+    frames: int,
+    steps: int = 1,
+    show_small: bool = True,
+    filename: str = "particles.mp4",
 ) -> None:
     fig, ax = plt.subplots()
     for s in ["top", "bottom", "left", "right"]:
@@ -115,7 +122,9 @@ def animate(
     ax.set_ylim(0, 1)
     ax.xaxis.set_ticks([])
     ax.yaxis.set_ticks([])
-    circles: Sequence[Circle] = [draw(ax, p) for p in particles]
+    circles: Sequence[Circle] = (
+        [draw(ax, p) for p in particles] if show_small else [draw(ax, particles[0])]
+    )
 
     def init() -> Iterable[Artist]:
         return circles
@@ -135,16 +144,71 @@ def animate(
         interval=1,
         blit=True,
     )
-    anim.save("particles.mp4", writer="ffmpeg", fps=60)
+    anim.save(filename, writer="ffmpeg", fps=60)
 
 
-def main() -> None:
+def main(show_small: bool, filename: str, steps=1) -> None:
     particles = [
         Particle(np.array([0.5, 0.5]), np.array([0, 0]), 0.1, 2.0, {"color": "red"})
     ]
-    place_particles(particles, 200, 0.01, 1.0, {"color": "blue"})
-    animate(particles, 0.005, 600, 16)
+    place_particles(particles, 200, 0.005, 1.0, {"color": "blue"})
+    animate(
+        particles, 0.005, 600, steps=steps, show_small=show_small, filename=filename
+    )
+
+
+def simulate(dt: float, frames: int, steps: int = 1) -> Iterable[tuple[float, float]]:
+    particles = [
+        Particle(np.array([0.5, 0.5]), np.array([0, 0]), 0.1, 2.0, {"color": "red"})
+    ]
+    place_particles(particles, 1000, 0.005, 1.0, {"color": "blue"})
+    for i in range(frames * steps):
+        advance_all(particles, dt / steps)
+        yield i * dt / steps, particles[0].r[0]
+
+
+def plot(n: int, dt: float, frames: int, steps: int = 1) -> None:
+    plt.figure(figsize=(10, 6))
+    sigma2s = []
+    for _ in range(n):
+        points = list(simulate(dt, frames, steps))
+        sigma2s.append(
+            np.mean(
+                [
+                    ((x2 - x1) ** 2) / (t2 - t1)
+                    for (t1, x1), (t2, x2) in zip(points[:-1], points[1:])
+                ]
+            )
+        )
+        plt.plot([t for t, _ in points], [x - 0.5 for _, x in points], linestyle="-")
+    sigma2 = np.mean(sigma2s)
+    plt.plot(
+        [dt * i for i in range(frames)],
+        [1.96 * np.sqrt(sigma2 * dt * i) for i in range(frames)],
+        color="black",
+        linestyle="dashed",
+        label="$\\pm 1.96\\sigma\\sqrt{t}$",
+    )
+    plt.plot(
+        [dt * i for i in range(frames)],
+        [-1.96 * np.sqrt(sigma2 * dt * i) for i in range(frames)],
+        color="black",
+        linestyle="dashed",
+        label="$\\pm 1.96\\sigma\\sqrt{t}$",
+    )
+    plt.title("x-coordinate")
+    plt.xlabel("$t$")
+    plt.ylabel("$x_t$")
+    plt.legend()
+    plt.grid(True)
+    plt.savefig("particles3.png")
+    plt.show()
 
 
 if __name__ == "__main__":
-    main()
+    np.random.seed(4)
+    main(show_small=False, filename="particles1.mp4", steps=16)
+    np.random.seed(4)
+    main(show_small=True, filename="particles2.mp4", steps=16)
+    np.random.seed(5)
+    plot(20, 0.01, 600, 1)
