@@ -194,14 +194,13 @@ def plot(n: int, dt: float, frames: int, steps: int = 1) -> None:
         [-1.96 * np.sqrt(sigma2 * dt * i) for i in range(frames)],
         color="black",
         linestyle="dashed",
-        label="$\\pm 1.96\\sigma\\sqrt{t}$",
     )
     plt.title("x-coordinate")
     plt.xlabel("$t$")
     plt.ylabel("$x_t$")
     plt.legend()
     plt.grid(True)
-    plt.savefig("particles3.png")
+    plt.savefig("particles3.png", transparent=True)
     plt.show()
 
 
