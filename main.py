@@ -197,7 +197,7 @@ def plot(n: int, dt: float, frames: int, steps: int = 1) -> None:
     )
     plt.title("x-coordinate")
     plt.xlabel("$t$")
-    plt.ylabel("$x_t$")
+    plt.ylabel("$x(t)$")
     plt.legend()
     plt.grid(True)
     plt.savefig("particles3.png", transparent=True)
